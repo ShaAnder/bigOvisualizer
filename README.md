@@ -1,5 +1,7 @@
 ## Big O Notation Visualizer (React + TypeScript)
 
+[Live Link](https://shaander.github.io/bigOvisualizer)
+
 A simple, beginner‑friendly visualizer for time and space complexity. Switch between Big‑O classes (O(1), O(log n), O(n), O(n log n), O(n^2), …), adjust inputs, and see a single bar summarize estimated operations, total time (clamped), and extra space.
 
 Highlights
