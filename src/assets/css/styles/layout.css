@@ -1,49 +1,79 @@
 .page {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 24px 16px 56px;
+	max-width: 1000px;
+	margin: 0 auto;
+	padding: 24px 16px 56px;
 }
 
 .header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 12px;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	margin-bottom: 12px;
 }
 
-.header h1 { font-size: 24px; margin: 0; }
-.subtle { color: #94a3b8; font-size: 14px; }
+.header h1 {
+	font-size: 24px;
+	margin: 0;
+}
+.subtle {
+	color: #94a3b8;
+	font-size: 14px;
+}
 
 .panel {
-  background: #111827;
-  border: 1px solid #1f2937;
-  border-radius: 12px;
-  padding: 16px;
+	background: #111827;
+	border: 1px solid #1f2937;
+	border-radius: 12px;
+	padding: 16px;
 }
 
-.tabs { display: flex; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
+.tabs {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin: 12px 0;
+}
 .tab {
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: #0b1220;
-  border: 1px solid #1f2937;
-  color: #cbd5e1;
-  cursor: pointer;
+	padding: 8px 12px;
+	border-radius: 8px;
+	background: #0b1220;
+	border: 1px solid #1f2937;
+	color: #cbd5e1;
+	cursor: pointer;
 }
-.tab[aria-selected="true"] { background: #1f2937; color: #fff; }
+.tab[aria-selected="true"] {
+	background: #1f2937;
+	color: #fff;
+}
 
-.grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 16px;
+}
 
-.section { display: grid; gap: 10px; }
-.section h3 { margin: 0; font-size: 16px; color: #e5e7eb; }
+.section {
+	display: grid;
+	gap: 10px;
+}
+.section h3 {
+	margin: 0;
+	font-size: 16px;
+	color: #e5e7eb;
+}
 .code {
-  background: #0b1220;
-  border: 1px solid #1f2937;
-  padding: 12px;
-  border-radius: 8px;
-  overflow: auto;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 13px;
+	background: #0b1220;
+	border: 1px solid #1f2937;
+	padding: 12px;
+	border-radius: 8px;
+	overflow: auto;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		"Liberation Mono", "Courier New", monospace;
+	font-size: 13px;
 }
 
-.footer { margin-top: 16px; color: #94a3b8; font-size: 13px; }
+.footer {
+	margin-top: 16px;
+	color: #94a3b8;
+	font-size: 13px;
+}

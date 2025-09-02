@@ -1,69 +1,27 @@
-# React + TypeScript + Vite
+## Big O Notation Visualizer (React + TypeScript)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A simple, beginner‑friendly visualizer for time and space complexity. Switch between Big‑O classes (O(1), O(log n), O(n), O(n log n), O(n^2), …), adjust inputs, and see a single bar summarize estimated operations, total time (clamped), and extra space.
 
-Currently, two official plugins are available:
+Highlights
+- Clear, plain‑English explanations per tab
+- O(log n) uses an iterative binary search with step‑by‑step trace on a deterministic array 1..n
+- Static bar (no glitchy animation) with clamped time: 1 us to 20 s, and space scaled up to ~1 GB for display
+- Space = auxiliary memory only (excluding input)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Run locally
+- Install: npm install
+- Dev server: npm run dev
+- Lint: npm run lint
+- Build: npm run build
+- Preview build: npm run preview
 
-## Expanding the ESLint configuration
+Deploy (optional, GitHub Pages)
+1) Build: npm run build
+2) Serve the dist/ folder on any static host, or push it to a gh-pages branch.
+  If your repo uses GitHub Pages from the gh-pages branch, you can publish the contents of dist/ there.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Notes
+- Units are ASCII‑only: microseconds shown as "us"
+- Binary search extra space is O(1)
+- Examples in `src/data/bigO.ts` map to the visualized ops/time/space numbers
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```

@@ -1,5 +1,10 @@
-code, pre { color: #d1fae5; }
-strong { color: #f8fafc; }
+code,
+pre {
+	color: #d1fae5;
+}
+strong {
+	color: #f8fafc;
+}
 
 /* Small info icon and tooltip styling */
 .info {
@@ -41,7 +46,7 @@ strong { color: #f8fafc; }
 	padding: 8px 10px;
 	font-size: 12px;
 	min-width: 220px;
-	box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 	opacity: 0;
 	transform: translateY(-4px);
 	transition: opacity 120ms ease, transform 120ms ease;

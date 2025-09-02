@@ -3,11 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://ShaAnder.github.io/bigOvisualizer/",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:info": "echo Deploy by serving dist/ on any static host or push it to gh-pages"
   },
   "dependencies": {
     "react": "^19.1.1",

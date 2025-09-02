@@ -1,12 +1,42 @@
-.controls { display: grid; gap: 12px; }
-.row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
-.row label { color: #cbd5e1; font-size: 13px; }
-.row input[type="number"], .row input[type="text"], .row select {
-  background: #0b1220; color: #e2e8f0; border: 1px solid #1f2937;
-  border-radius: 6px; padding: 6px 8px; min-width: 80px;
+.controls {
+	display: grid;
+	gap: 12px;
+}
+.row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 12px;
+	align-items: center;
+}
+.row label {
+	color: #cbd5e1;
+	font-size: 13px;
+}
+.row input[type="number"],
+.row input[type="text"],
+.row select {
+	background: #0b1220;
+	color: #e2e8f0;
+	border: 1px solid #1f2937;
+	border-radius: 6px;
+	padding: 6px 8px;
+	min-width: 80px;
 }
 .row input[type="number"]::-webkit-outer-spin-button,
-.row input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.row input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
-.radio-group { display: inline-flex; gap: 6px; align-items: center; }
-.hint { color: #94a3b8; font-size: 12px; }
+.row input[type="number"]::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+.row input[type="number"] {
+	appearance: textfield;
+	-moz-appearance: textfield;
+}
+.radio-group {
+	display: inline-flex;
+	gap: 6px;
+	align-items: center;
+}
+.hint {
+	color: #94a3b8;
+	font-size: 12px;
+}
