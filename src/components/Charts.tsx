@@ -118,7 +118,9 @@ export function LineChart({
 
 	const yVals = allPoints.map((p) => p.y).filter((v) => Number.isFinite(v));
 	const maxY = yVals.length ? Math.max(...yVals) : 1;
-	const minPosY = yVals.filter((v) => v > 0).reduce((m, v) => (m > 0 ? Math.min(m, v) : v), 0);
+	const minPosY = yVals
+		.filter((v) => v > 0)
+		.reduce((m, v) => (m > 0 ? Math.min(m, v) : v), 0);
 
 	const useLog = (() => {
 		if (!hasData) return false;
@@ -129,7 +131,12 @@ export function LineChart({
 		return false;
 	})();
 
-	let yTicks: { niceMin: number; niceMax: number; step: number; values: number[] };
+	let yTicks: {
+		niceMin: number;
+		niceMax: number;
+		step: number;
+		values: number[];
+	};
 	let sx: (x: number) => number;
 	let sy: (y: number) => number;
 
@@ -141,9 +148,17 @@ export function LineChart({
 		const maxExp = Math.ceil(Math.log10(yMax));
 		const values: number[] = [];
 		for (let e = minExp; e <= maxExp; e++) values.push(Math.pow(10, e));
-		yTicks = { niceMin: Math.pow(10, minExp), niceMax: Math.pow(10, maxExp), step: 0, values };
+		yTicks = {
+			niceMin: Math.pow(10, minExp),
+			niceMax: Math.pow(10, maxExp),
+			step: 0,
+			values,
+		};
 		const xRange = Math.max(1e-9, xTicks.niceMax - xTicks.niceMin);
-		const yRange = Math.max(1e-9, Math.log10(yTicks.niceMax) - Math.log10(yTicks.niceMin));
+		const yRange = Math.max(
+			1e-9,
+			Math.log10(yTicks.niceMax) - Math.log10(yTicks.niceMin)
+		);
 		sx = (x: number) => padLeft + (x - xTicks.niceMin) * (innerW / xRange);
 		sy = (y: number) => {
 			const yy = y <= 0 ? yTicks.niceMin : y;
@@ -157,7 +172,8 @@ export function LineChart({
 		const xRange = Math.max(1e-9, xTicks.niceMax - xTicks.niceMin);
 		const yRange = Math.max(1e-9, yTicks.niceMax - yTicks.niceMin);
 		sx = (x: number) => padLeft + (x - xTicks.niceMin) * (innerW / xRange);
-		sy = (y: number) => height - padBottom - (y - yTicks.niceMin) * (innerH / yRange);
+		sy = (y: number) =>
+			height - padBottom - (y - yTicks.niceMin) * (innerH / yRange);
 	}
 
 	const scaled = useMemo(
