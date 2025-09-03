@@ -40,6 +40,8 @@ export function toSeconds(value: number, unit: "ns" | "us" | "ms" | "s") {
 }
 
 export function widthFromSeconds(seconds: number) {
+	// Zero should display as 0% width
+	if (!isFinite(seconds) || seconds <= 0) return 0;
 	// Map 1us..20s to 1%..100% logarithmically-ish
 	const min = 1e-6;
 	const max = 20; // clamp around 20 seconds
@@ -50,6 +52,8 @@ export function widthFromSeconds(seconds: number) {
 }
 
 export function widthFromBytes(bytes: number) {
+	// Zero should display as 0% width
+	if (!isFinite(bytes) || bytes <= 0) return 0;
 	const min = 1; // 1 B
 	const max = 1024 ** 3; // 1 GB
 	const b = clamp(bytes, min, max);

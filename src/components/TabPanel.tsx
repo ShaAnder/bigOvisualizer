@@ -1,5 +1,5 @@
 // TabPanel renders the detailed content for a given Big-O tab.
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { TabSpec } from "../types/bigo";
 import { Controls } from "./Controls";
 import type { ControlsState } from "../types/controls";
@@ -7,13 +7,17 @@ import { defaultControls } from "../state/defaults";
 import { SingleBarChart } from "./SingleBarChart";
 import { BinarySearchSteps } from "./BinarySearchSteps";
 
-export function TabPanel({ spec }: { spec: TabSpec }) {
+export function TabPanel({ spec, onSample }: { spec: TabSpec; onSample?: (notation: string, n: number, seconds: number, bytes: number) => void }) {
 	const [state, setState] = useState<ControlsState>(defaultControls);
 	const code = useMemo(() => spec.example[state.metric], [spec, state.metric]);
 
 	// Example-driven overrides per example.md
-	const overrides = useMemo(() => {
+		const overrides = useMemo(() => {
 		const n = Math.max(0, Math.floor(state.n));
+		// If input size is zero, treat both time and space as zero for the static bar
+		if (n === 0) {
+			return { seconds: state.metric === "time" ? 0 : undefined, bytes: state.metric === "space" ? 0 : undefined };
+		}
 		const bytesPerItem = Math.max(0, state.bytesPerItem);
 		if (state.metric === "time") {
 			switch (spec.id) {
@@ -81,6 +85,19 @@ export function TabPanel({ spec }: { spec: TabSpec }) {
 		}
 		return { seconds: undefined, bytes: undefined };
 	}, [spec.id, state.metric, state.n, state.bytesPerItem]);
+
+		// Benchmark on changes and report a sample for charts
+		useEffect(() => {
+			const n = Math.max(0, Math.floor(state.n));
+			// Lazy import to keep chunk size small
+			import("../examples/bench").then(({ runBench }) => {
+				const r = runBench(spec.id, n);
+				const bytes = state.metric === "space" ? overrides.bytes ?? r.auxItems * state.bytesPerItem : r.auxItems * state.bytesPerItem;
+				onSample?.(spec.id, n, r.seconds, bytes);
+			}).catch(() => {
+				// ignore
+			});
+		}, [spec.id, state.n, state.metric, state.bytesPerItem, overrides.bytes, onSample]);
 	return (
 		<div className="grid">
 			<div className="section">
