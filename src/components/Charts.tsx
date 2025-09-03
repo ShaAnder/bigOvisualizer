@@ -74,35 +74,31 @@ export function LineChart({
   return (
   <div style={{ minWidth: width }}>
       <h3 style={{ color: '#e5e7eb', margin: '4px 0 8px 0', fontSize: 16 }}>{title}</h3>
-      <svg width={width} height={height} style={{ background: '#0b1220', border: '1px solid #1f2937', borderRadius: 8 }}>
-        {/* Axes */}
-    <line x1={padLeft} y1={height - padBottom} x2={width - padRight} y2={height - padBottom} stroke="#334155" />
-    <line x1={padLeft} y1={padTop} x2={padLeft} y2={height - padBottom} stroke="#334155" />
+      <svg width={width} height={height} style={{ background: '#0b1220', borderRadius: 8 }}>
+        {/* No axis baselines; only labels remain */}
 
         {/* X ticks */}
-    {xTicks.values.map((v, i) => (
-          <g key={`xt-${i}`}>
-      <line x1={sx(v)} y1={height - padBottom} x2={sx(v)} y2={height - padBottom + 6} stroke="#334155" />
-      <text x={sx(v)} y={height - padBottom + 18} fill="#94a3b8" fontSize={10} textAnchor="middle">{Math.round(v)}</text>
-          </g>
-        ))}
+  {xTicks.values.map((v, i) => (
+      <g key={`xt-${i}`}>
+    <text x={sx(v)} y={height - padBottom + 18} fill="#94a3b8" fontSize={10} textAnchor="middle">{Math.round(v)}</text>
+      </g>
+    ))}
     <text x={(width) / 2} y={height - 6} fill="#94a3b8" fontSize={10} textAnchor="middle">{xLabel}</text>
 
         {/* Y ticks */}
-    {yTicks.values.map((v, i) => (
-          <g key={`yt-${i}`}>
-      <line x1={padLeft - 6} y1={sy(v)} x2={padLeft} y2={sy(v)} stroke="#334155" />
-      <text x={padLeft - 8} y={sy(v) + 3} fill="#94a3b8" fontSize={10} textAnchor="end">{yFormat ? yFormat(v) : v.toFixed(2)}</text>
-          </g>
-        ))}
+  {yTicks.values.map((v, i) => (
+      <g key={`yt-${i}`}>
+    <text x={padLeft - 8} y={sy(v) + 3} fill="#94a3b8" fontSize={10} textAnchor="end">{yFormat ? yFormat(v) : v.toFixed(2)}</text>
+      </g>
+    ))}
 
         {/* Series lines and points */}
         {scaled.map(s => (
           <g key={s.id}>
-            <polyline fill="none" stroke={s.color} strokeWidth={2} points={(s.points as SPoint[]).map((p) => `${p.x},${p.y}`).join(' ')} />
+            <polyline fill="none" stroke={s.color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" points={(s.points as SPoint[]).map((p) => `${p.x},${p.y}`).join(' ')} />
             {(s.points as SPoint[]).map((p, idx: number) => (
               <g key={idx}>
-                <circle cx={p.x} cy={p.y} r={3} fill={s.color} />
+                <circle cx={p.x} cy={p.y} r={2.5} fill={s.color} />
               </g>
             ))}
           </g>

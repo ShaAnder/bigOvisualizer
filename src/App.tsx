@@ -38,7 +38,7 @@ export default function App() {
 				n. It focuses on the trend, not exact times. Use the tabs to explore
 				common classes with a single animated bar.
 			</div>
-			<div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center", marginBottom: 12 }}>
+			<div style={{ display: "flex", gap: 16, flexWrap: "nowrap", justifyContent: "center", marginBottom: 12, overflowX: "auto" }}>
 				<LineChart title="Time (seconds) vs n" series={Object.values(timeSeries)} yFormat={(v)=> v < 1e-3 ? `${(v*1e6).toFixed(0)} us` : v < 1 ? `${(v*1e3).toFixed(1)} ms` : `${v.toFixed(2)} s`} />
 				<LineChart title="Space (bytes) vs n" series={Object.values(spaceSeries)} yFormat={(v)=>{
 					const units=["B","KB","MB","GB"]; let i=0; let x=v; while(x>=1024 && i<units.length-1){x/=1024;i++;}
