@@ -48,7 +48,10 @@ export default function App() {
 				const next = [...s.points];
 				// Always start at the origin so the line grows from (0,0)
 				if (next.length === 0) next.push({ x: 0, y: 0 });
-				if (!(n === 0 && seconds === 0)) next.push({ x: n, y: seconds });
+				// One point per n: update if exists, else push
+				const found = next.findIndex((p) => p.x === n);
+				if (found >= 0) next[found] = { x: n, y: seconds };
+				else if (!(n === 0 && seconds === 0)) next.push({ x: n, y: seconds });
 				return { ...prev, [notation]: { ...s, points: next } } as Record<
 					Notation,
 					Series
@@ -105,6 +108,8 @@ export default function App() {
 							headerless
 							series={Object.values(timeSeries)}
 							yFormat={(v) => {
+								if (v < 1e-12) return `${(v * 1e15).toFixed(0)} fs`;
+								if (v < 1e-9) return `${(v * 1e12).toFixed(0)} ps`;
 								if (v < 1e-6) return `${(v * 1e9).toFixed(0)} ns`;
 								if (v < 1e-3) return `${(v * 1e6).toFixed(0)} us`;
 								if (v < 1) return `${(v * 1e3).toFixed(1)} ms`;
@@ -128,7 +133,7 @@ export default function App() {
 						/>
 						{/* Clamp notice and byte tooltip below the bar */}
 						<div className="footer" style={{ marginTop: -8 }}>
-							Clamp: 1 us-20 s; Space scaled up to ~1 GB for display
+							Clamp: 1 fs–20 s; Space scaled up to ~1 GB for display
 						</div>
 						<div className="hint info">
 							<span className="tooltip">

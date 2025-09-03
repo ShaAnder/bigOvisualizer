@@ -1,6 +1,6 @@
 // A tiny SVG line chart tailored for our Big-O samples.
 // Focus: crisp axes, light grid, and simple animation when new points arrive.
-import { useCallback, useMemo, useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export interface Point {
 	x: number;
@@ -11,6 +11,8 @@ export interface Series {
 	color: string;
 	points: Point[];
 }
+
+type SPoint = { x: number; y: number; v: number };
 
 // "Nice" numbers for axis labels (keeps ticks human-friendly)
 function niceNum(range: number, round: boolean) {
@@ -52,35 +54,14 @@ function SeriesLine({
 	points: { x: number; y: number }[];
 	color: string;
 }) {
-	const ref = useRef<SVGPolylineElement | null>(null);
-	useEffect(() => {
-		const el = ref.current as SVGPolylineElement | null;
-		if (!el) return;
-		try {
-			const geom = el as unknown as SVGGeometryElement;
-			const total =
-				typeof geom.getTotalLength === "function" ? geom.getTotalLength() : 0;
-			// Prepare dash to fully hide, then animate to 0
-			el.style.transition = "none";
-			el.style.strokeDasharray = String(total);
-			el.style.strokeDashoffset = String(total);
-			// Force style flush
-			void el.getBoundingClientRect();
-			el.style.transition = "stroke-dashoffset 450ms ease-out";
-			el.style.strokeDashoffset = "0";
-		} catch {
-			// ignore if not supported
-		}
-	}, [points.length]);
+	const d = points.map((p) => `${p.x},${p.y}`).join(" ");
 	return (
 		<polyline
-			ref={ref}
 			fill="none"
 			stroke={color}
-			strokeWidth={1.5}
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			points={points.map((p) => `${p.x},${p.y}`).join(" ")}
+			strokeWidth={2}
+			points={d}
+			style={{ transition: "all 240ms ease-out" }}
 		/>
 	);
 }
@@ -93,6 +74,7 @@ export function LineChart({
 	yFormat,
 	xLabel = "n",
 	headerless = false,
+	scaleMode = "auto",
 }: {
 	title: string;
 	series: Series[];
@@ -101,6 +83,7 @@ export function LineChart({
 	yFormat?: (v: number) => string;
 	xLabel?: string;
 	headerless?: boolean;
+	scaleMode?: "auto" | "linear" | "log";
 }) {
 	// Paddings to avoid clipping tick labels (extra breathing room)
 	const padLeft = 64,
@@ -125,32 +108,64 @@ export function LineChart({
 	const W = Math.max(280, cw);
 	const innerW = W - padLeft - padRight;
 	const innerH = height - padTop - padBottom;
-	const allPoints = series.flatMap((s) => s.points);
-	const maxX = allPoints.length ? Math.max(...allPoints.map((p) => p.x)) : 1;
-	const maxY = allPoints.length ? Math.max(...allPoints.map((p) => p.y)) : 1;
-	const hasData = allPoints.length > 0;
-	// Start axes at 0; exactly 5 ticks per axis for readability
-	const xTicks = niceScale(0, Math.max(1, maxX), 5);
-	const yTicks = niceScale(0, Math.max(1e-12, maxY), 5);
-	const rx = innerW / Math.max(1e-9, xTicks.niceMax - xTicks.niceMin);
-	const ry = innerH / Math.max(1e-9, yTicks.niceMax - yTicks.niceMin);
-	const sx = useCallback(
-		(x: number) => padLeft + (x - xTicks.niceMin) * rx,
-		[padLeft, xTicks.niceMin, rx]
-	);
-	const sy = useCallback(
-		(y: number) => height - padBottom - (y - yTicks.niceMin) * ry,
-		[height, padBottom, yTicks.niceMin, ry]
-	);
 
-	type SPoint = { x: number; y: number; v: number };
+	// We render raw measured seconds; we never multiply times.
+	// Only the Y-axis scale (linear/log) changes how they’re plotted.
+	const allPoints = series.flatMap((s) => s.points);
+	const hasData = allPoints.length > 0;
+	const maxX = hasData ? Math.max(...allPoints.map((p) => p.x)) : 1;
+	const xTicks = niceScale(0, Math.max(1, maxX), 5);
+
+	const yVals = allPoints.map((p) => p.y).filter((v) => Number.isFinite(v));
+	const maxY = yVals.length ? Math.max(...yVals) : 1;
+	const minPosY = yVals.filter((v) => v > 0).reduce((m, v) => (m > 0 ? Math.min(m, v) : v), 0);
+
+	const useLog = (() => {
+		if (!hasData) return false;
+		if (scaleMode === "log") return true;
+		if (scaleMode === "linear") return false;
+		// Prefer log by default to make tiny changes visible even on flat lines
+		if (minPosY > 0) return true;
+		return false;
+	})();
+
+	let yTicks: { niceMin: number; niceMax: number; step: number; values: number[] };
+	let sx: (x: number) => number;
+	let sy: (y: number) => number;
+
+	if (useLog) {
+		// Log scale (base 10). Avoid zero/negative by clamping to min positive value.
+		const yMin = minPosY > 0 ? minPosY : Math.max(1e-12, maxY / 1e6);
+		const yMax = Math.max(yMin * 10, maxY);
+		const minExp = Math.floor(Math.log10(yMin));
+		const maxExp = Math.ceil(Math.log10(yMax));
+		const values: number[] = [];
+		for (let e = minExp; e <= maxExp; e++) values.push(Math.pow(10, e));
+		yTicks = { niceMin: Math.pow(10, minExp), niceMax: Math.pow(10, maxExp), step: 0, values };
+		const xRange = Math.max(1e-9, xTicks.niceMax - xTicks.niceMin);
+		const yRange = Math.max(1e-9, Math.log10(yTicks.niceMax) - Math.log10(yTicks.niceMin));
+		sx = (x: number) => padLeft + (x - xTicks.niceMin) * (innerW / xRange);
+		sy = (y: number) => {
+			const yy = y <= 0 ? yTicks.niceMin : y;
+			const t = (Math.log10(yy) - Math.log10(yTicks.niceMin)) / yRange;
+			return height - padBottom - t * innerH;
+		};
+	} else {
+		// Linear scale from 0..maxY
+		const lin = niceScale(0, Math.max(1e-12, maxY), 5);
+		yTicks = lin;
+		const xRange = Math.max(1e-9, xTicks.niceMax - xTicks.niceMin);
+		const yRange = Math.max(1e-9, yTicks.niceMax - yTicks.niceMin);
+		sx = (x: number) => padLeft + (x - xTicks.niceMin) * (innerW / xRange);
+		sy = (y: number) => height - padBottom - (y - yTicks.niceMin) * (innerH / yRange);
+	}
+
 	const scaled = useMemo(
 		() =>
 			series.map((s) => ({
 				...s,
 				points: s.points.map((p) => ({ x: sx(p.x), y: sy(p.y), v: p.y })),
 			})),
-		// sx, sy change when ticks/size change; include them
 		[series, sx, sy]
 	);
 

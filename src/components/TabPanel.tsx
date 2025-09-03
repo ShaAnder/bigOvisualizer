@@ -4,6 +4,7 @@ import type { Notation, TabSpec } from "../types/bigo";
 import { Controls } from "./Controls";
 import type { ControlsState } from "../types/controls";
 import { BinarySearchSteps } from "./BinarySearchSteps";
+import { runBench } from "../examples/bench";
 
 // One tab’s content: quick intro, code snippet, inputs, and extra notes.
 export function TabPanel({
@@ -87,10 +88,12 @@ export function TabPanel({
 		return { seconds, bytes };
 	}, [spec.id, state.n, state.bytesPerItem]);
 
-	// Only emit a new sample when user commits (Enter). No auto-emission on change.
+	// Only emit a new sample when user commits (Enter). We measure real time here.
 	const commitSample = () => {
 		const n = Math.max(0, Math.floor(state.n));
-		onSample?.(spec.id, n, overrides.seconds ?? 0, overrides.bytes ?? 0);
+		const { seconds } = runBench(spec.id, n);
+		// Keep the raw seconds for fidelity; formatting happens in the chart
+		onSample?.(spec.id, n, seconds, overrides.bytes ?? 0);
 	};
 	return (
 		<div className="grid">

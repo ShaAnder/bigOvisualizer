@@ -30,11 +30,12 @@ function measure(fn: () => void, minMs = 10, maxIters = 1_000): number {
 }
 
 export function runO1(): BenchResult {
+	// Pure O(1): a tiny, fixed amount of work
 	const arr = [1, 2, 3, 4, 5];
 	const seconds = measure(() => {
-		// constant amount of work
 		const x = arr[0] + arr[1];
-		void x;
+		// Side-effect to prevent elimination in some engines
+		if (x === -1) console.log("");
 	});
 	return { seconds, auxItems: 1 };
 }
