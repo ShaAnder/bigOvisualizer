@@ -17,6 +17,8 @@ export function Tabs<T extends string>({
 					role="tab"
 					className="tab"
 					aria-selected={t.id === active}
+					aria-controls={`panel-${t.id}`}
+					type="button"
 					onClick={() => onChange(t.id)}
 				>
 					{t.label}

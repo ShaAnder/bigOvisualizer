@@ -1,103 +1,97 @@
 // TabPanel renders the detailed content for a given Big-O tab.
-import { useEffect, useMemo, useState } from "react";
-import type { TabSpec } from "../types/bigo";
+import { useMemo } from "react";
+import type { Notation, TabSpec } from "../types/bigo";
 import { Controls } from "./Controls";
 import type { ControlsState } from "../types/controls";
-import { defaultControls } from "../state/defaults";
-import { SingleBarChart } from "./SingleBarChart";
 import { BinarySearchSteps } from "./BinarySearchSteps";
 
-export function TabPanel({ spec, onSample }: { spec: TabSpec; onSample?: (notation: string, n: number, seconds: number, bytes: number) => void }) {
-	const [state, setState] = useState<ControlsState>(defaultControls);
-	const code = useMemo(() => spec.example[state.metric], [spec, state.metric]);
+// One tab’s content: quick intro, code snippet, inputs, and extra notes.
+export function TabPanel({
+	spec,
+	onSample,
+	state,
+	onChange,
+}: {
+	spec: TabSpec;
+	onSample?: (
+		notation: Notation,
+		n: number,
+		seconds?: number,
+		bytes?: number
+	) => void;
+	state: ControlsState;
+	onChange: (patch: Partial<ControlsState>) => void;
+}) {
+	const code = useMemo(() => spec.example.time, [spec]);
 
-	// Example-driven overrides per example.md
-		const overrides = useMemo(() => {
+	// Example-driven rough estimates for both metrics
+	const overrides = useMemo(() => {
 		const n = Math.max(0, Math.floor(state.n));
-		// If input size is zero, treat both time and space as zero for the static bar
-		if (n === 0) {
-			return { seconds: state.metric === "time" ? 0 : undefined, bytes: state.metric === "space" ? 0 : undefined };
-		}
 		const bytesPerItem = Math.max(0, state.bytesPerItem);
-		if (state.metric === "time") {
-			switch (spec.id) {
-				case "O(1)": {
-					// logAtMost10: up to 10 ops regardless of n
-					const ops = Math.min(n, 10);
-					const perOpNs = 100; // 100 ns/op baseline
-					return { seconds: (ops * perOpNs) / 1e9, bytes: undefined };
-				}
-				case "O(log n)": {
-					// binary search: ~ceil(log2(n+1)) comparisons
-					const ops = Math.max(1, Math.ceil(Math.log2(Math.max(1, n) + 1)));
-					const perOpNs = 100;
-					return { seconds: (ops * perOpNs) / 1e9, bytes: undefined };
-				}
-				case "O(n)": {
-					// onlyElementsAtEvenIndex: scans n, writes ~n/2
-					const ops = n; // dominant loop over n
-					const perOpNs = 100;
-					return { seconds: (ops * perOpNs) / 1e9, bytes: undefined };
-				}
-				case "O(n log n)": {
-					// Linearithmic baseline (e.g., mergesort comparisons)
-					const ops = n * Math.max(1, Math.ceil(Math.log2(Math.max(1, n))));
-					const perOpNs = 100;
-					return { seconds: (ops * perOpNs) / 1e9, bytes: undefined };
-				}
-				case "O(n^2)": {
-					// subtotals: ~n(n+1)/2 additions
-					const ops = (n * (n + 1)) / 2;
-					const perOpNs = 100;
-					return { seconds: (ops * perOpNs) / 1e9, bytes: undefined };
-				}
+		if (n === 0) return { seconds: 0, bytes: 0 };
+		// time (seconds) using a tiny per-op baseline
+		let seconds = 0;
+		switch (spec.id) {
+			case "O(1)": {
+				const ops = Math.min(n, 10);
+				const perOpNs = 100;
+				seconds = (ops * perOpNs) / 1e9;
+				break;
 			}
-		} else {
-			// space
-			switch (spec.id) {
-				case "O(1)": {
-					// logUpTo: constant extra space
-					const bytes = 1 * bytesPerItem; // simple constant bucket
-					return { seconds: undefined, bytes };
-				}
-				case "O(log n)": {
-					// iterative binary search: constant extra
-					const bytes = 1 * bytesPerItem;
-					return { seconds: undefined, bytes };
-				}
-				case "O(n)": {
-					// onlyElementsAtEvenIndex: ceil(n/2) items allocated
-					const items = Math.ceil(n / 2);
-					const bytes = items * bytesPerItem;
-					return { seconds: undefined, bytes };
-				}
-				case "O(n log n)": {
-					// mergesort space ~ n items
-					const bytes = n * bytesPerItem;
-					return { seconds: undefined, bytes };
-				}
-				case "O(n^2)": {
-					// matrix n x n
-					const bytes = n * n * bytesPerItem;
-					return { seconds: undefined, bytes };
-				}
+			case "O(log n)": {
+				const ops = Math.max(1, Math.ceil(Math.log2(Math.max(1, n) + 1)));
+				const perOpNs = 100;
+				seconds = (ops * perOpNs) / 1e9;
+				break;
+			}
+			case "O(n)": {
+				const ops = n;
+				const perOpNs = 100;
+				seconds = (ops * perOpNs) / 1e9;
+				break;
+			}
+			case "O(n log n)": {
+				const ops = n * Math.max(1, Math.ceil(Math.log2(Math.max(1, n))));
+				const perOpNs = 100;
+				seconds = (ops * perOpNs) / 1e9;
+				break;
+			}
+			case "O(n^2)": {
+				const ops = (n * (n + 1)) / 2;
+				const perOpNs = 100;
+				seconds = (ops * perOpNs) / 1e9;
+				break;
 			}
 		}
-		return { seconds: undefined, bytes: undefined };
-	}, [spec.id, state.metric, state.n, state.bytesPerItem]);
+		// space (bytes) estimates
+		let bytes = 0;
+		switch (spec.id) {
+			case "O(1)":
+			case "O(log n)": {
+				bytes = 1 * bytesPerItem;
+				break;
+			}
+			case "O(n)": {
+				bytes = Math.ceil(n / 2) * bytesPerItem;
+				break;
+			}
+			case "O(n log n)": {
+				bytes = n * bytesPerItem;
+				break;
+			}
+			case "O(n^2)": {
+				bytes = n * n * bytesPerItem;
+				break;
+			}
+		}
+		return { seconds, bytes };
+	}, [spec.id, state.n, state.bytesPerItem]);
 
-		// Benchmark on changes and report a sample for charts
-		useEffect(() => {
-			const n = Math.max(0, Math.floor(state.n));
-			// Lazy import to keep chunk size small
-			import("../examples/bench").then(({ runBench }) => {
-				const r = runBench(spec.id, n);
-				const bytes = state.metric === "space" ? overrides.bytes ?? r.auxItems * state.bytesPerItem : r.auxItems * state.bytesPerItem;
-				onSample?.(spec.id, n, r.seconds, bytes);
-			}).catch(() => {
-				// ignore
-			});
-		}, [spec.id, state.n, state.metric, state.bytesPerItem, overrides.bytes, onSample]);
+	// Only emit a new sample when user commits (Enter). No auto-emission on change.
+	const commitSample = () => {
+		const n = Math.max(0, Math.floor(state.n));
+		onSample?.(spec.id, n, overrides.seconds ?? 0, overrides.bytes ?? 0);
+	};
 	return (
 		<div className="grid">
 			<div className="section">
@@ -108,36 +102,12 @@ export function TabPanel({ spec, onSample }: { spec: TabSpec; onSample?: (notati
 						<code>{code}</code>
 					</pre>
 				</div>
-				<div className="hint">
-					Space means the extra memory the algorithm needs while it runs. We do
-					not count the input you give it. Think of each number as taking the
-					same amount of room (for example, about 8 bytes), no matter how many
-					digits it has.
-				</div>
-				<div className="hint info">
-					<span className="tooltip">
-						<button type="button" className="icon" aria-label="What is a byte?">
-							i
-						</button>
-						<span className="tooltip-content">
-							A byte is a small unit of memory. On many systems, a typical
-							number uses about 8 bytes.
-						</span>
-					</span>
-					<span>What is a byte?</span>
-				</div>
+				{/* Removed obsolete space explanation and tooltip (moved below space bar) */}
 				<Controls
 					notation={spec.id}
 					state={state}
-					onChange={(patch) => setState((s) => ({ ...s, ...patch }))}
-				/>
-				<SingleBarChart
-					notation={spec.id}
-					metric={state.metric}
-					n={state.n}
-					bytesPerItem={state.bytesPerItem}
-					overrideSeconds={overrides.seconds}
-					overrideBytes={overrides.bytes}
+					onChange={onChange}
+					onCommit={commitSample}
 				/>
 				<div className="subtle">
 					<strong>Expected resource drain:</strong> {spec.expected}
@@ -161,6 +131,17 @@ export function TabPanel({ spec, onSample }: { spec: TabSpec; onSample?: (notati
 					<pre>
 						<code>{spec.realWorldCode}</code>
 					</pre>
+				</div>
+				{/* Disclaimer and warning under the information card */}
+				<div className="footer" style={{ marginTop: 8 }}>
+					<div>
+						<strong>Disclaimer:</strong> all numbers are rough estimates, not
+						actual computed figures.
+					</div>
+					<div>
+						<strong>Warning:</strong> submitting incredibly large numbers can
+						and will break the tab
+					</div>
 				</div>
 			</div>
 		</div>

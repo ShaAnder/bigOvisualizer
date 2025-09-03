@@ -11,6 +11,7 @@ import {
 } from "../utils/format";
 import { BASELINE_NS_PER_OP } from "../config/constants";
 
+// A single horizontal meter: time or space, whichever we ask for.
 export function SingleBarChart({
 	notation,
 	metric,
@@ -26,7 +27,7 @@ export function SingleBarChart({
 	overrideSeconds?: number; // optional exact time from example code
 	overrideBytes?: number; // optional exact space from example code
 }) {
-	// Estimate number of operations for each notation to use as a fallback
+	// Rough count of operations by notation; good enough to compare growth
 	const ops = useMemo(() => {
 		if (notation === "O(1)") return 1;
 		if (notation === "O(log n)") {
