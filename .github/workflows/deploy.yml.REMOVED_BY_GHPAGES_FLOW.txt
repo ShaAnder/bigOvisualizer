@@ -1,1 +1,0 @@
-This project uses a gh-pages branch flow. The previous GitHub Actions workflow was removed intentionally to avoid conflicts with branch-based Pages publishing.
